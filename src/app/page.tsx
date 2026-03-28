@@ -83,9 +83,6 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             SYS: ONLINE
           </div>
-          <div className="hidden sm:block px-3 py-1 rounded bg-black/50 border border-white/10 text-white cursor-pointer hover:border-primary/50 transition-colors">
-            Connect Wallet
-          </div>
         </div>
       </header>
 
