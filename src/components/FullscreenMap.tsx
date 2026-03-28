@@ -17,9 +17,29 @@ interface OsintData {
   maritime: any[];
 }
 
+interface SeismicAnomaly {
+  id: string;
+  mag: number;
+  place: string;
+  time: number;
+  coordinates: [number, number];
+}
+
+interface WhaleEvent {
+  id: string;
+  price: number;
+  qty: number;
+  valueUsd: number;
+  time: number;
+  coordinates: [number, number];
+  isBuyerMaker: boolean;
+}
+
 interface FullscreenMapProps {
   events: NewsItem[];
   osint?: OsintData | null;
+  seismic?: SeismicAnomaly[] | null;
+  whales?: WhaleEvent[] | null;
 }
 
 interface HoveredNode {
@@ -29,7 +49,7 @@ interface HoveredNode {
   color?: string;
 }
 
-export default function FullscreenMap({ events, osint }: FullscreenMapProps) {
+export default function FullscreenMap({ events, osint, seismic, whales }: FullscreenMapProps) {
   const [hoveredNode, setHoveredNode] = useState<HoveredNode | null>(null);
   
   const validMarkers = events.filter(e => e.coordinates);
@@ -119,6 +139,47 @@ export default function FullscreenMap({ events, osint }: FullscreenMapProps) {
                 <path d={PlaneSVG} fill="#00e5ff" opacity={0.6} className="drop-shadow-[0_0_5px_#00e5ff]" />
               </g>
               <circle r={10} fill="transparent" className="cursor-crosshair" />
+            </Marker>
+          ))}
+
+          {/* SEISMIC LAYER: Global Tectonic/Radiological Anomalies */}
+          {seismic?.map((anomaly) => {
+            const radius = Math.max(anomaly.mag * 1.5, 3);
+            return (
+              <Marker 
+                key={anomaly.id} 
+                coordinates={anomaly.coordinates}
+                onMouseEnter={() => setHoveredNode({
+                  category: `USGS MAG ${anomaly.mag.toFixed(1)} ANOMALY`,
+                  title: anomaly.place,
+                  subtitle: `Tectonics Registered: ${new Date(anomaly.time).toLocaleTimeString()}`,
+                  color: '#9933ff' 
+                })}
+                onMouseLeave={() => setHoveredNode(null)}
+              >
+                <circle r={radius * 2} fill="transparent" className="cursor-crosshair z-30" />
+                <circle r={radius} fill="#9933ff" className="animate-ping opacity-70 pointer-events-none" />
+                <circle r={radius / 2} fill="#9933ff" className="pointer-events-none drop-shadow-[0_0_15px_#9933ff]" />
+              </Marker>
+            );
+          })}
+
+          {/* WHALE LAYER: Web3 Real-Time Capital Transfers */}
+          {whales?.map((whale) => (
+            <Marker 
+              key={whale.id} 
+              coordinates={whale.coordinates}
+              onMouseEnter={() => setHoveredNode({
+                category: `WEB3 LIQUIDITY: ${whale.isBuyerMaker ? 'SELL OFF' : 'BUY WALL'}`,
+                title: `$${(whale.valueUsd / 1000000).toFixed(2)}M USD TRANSFER`,
+                subtitle: `${whale.qty.toFixed(2)} BTC @ $${whale.price.toFixed(2)} / BLOCK: ${whale.id}`,
+                color: '#ffcc00'
+              })}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              <circle r={15} fill="transparent" className="cursor-crosshair z-50" />
+              <circle r={8} fill="#ffcc00" className="animate-ping opacity-80 pointer-events-none duration-1000" />
+              <circle r={4} fill="#ffcc00" className="pointer-events-none drop-shadow-[0_0_20px_#ffcc00]" />
             </Marker>
           ))}
 
