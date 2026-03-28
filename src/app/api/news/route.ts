@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
+import { analyzeSentiment, generateBriefing } from '@/lib/aiAnalyst';
 
 const parser = new Parser();
 
@@ -42,6 +43,7 @@ interface NewsItem {
     loser: { symbol: string; change: string; };
   } | null;
   coordinates?: [number, number] | null;
+  sentiment?: { score: number; label: string; triggers: string[] | null };
 }
 
 export async function GET() {
@@ -105,35 +107,34 @@ export async function GET() {
           if (category === 'Crypto') {
             impacts.gainer = { symbol: matchedIncludes.includes('bitcoin') ? 'BTC' : 'SOL', change: `+${randomChange(1.5, 5.0)}%` };
             impacts.loser = { symbol: 'FIAT-IDX', change: `-${randomChange(0.2, 1.2)}%` };
-            // Decentralized usually visualized in varied spots (e.g., El Salvador, Miami, Dubai)
             const cryptoSpots: [number, number][] = [[-88.89, 13.79], [-80.19, 25.76], [55.27, 25.20]];
             coordinates = cryptoSpots[Math.floor(Math.random() * cryptoSpots.length)];
           } else if (category === 'War/Politics') {
-            impacts.gainer = { symbol: 'LMT (Defense)', change: `+${randomChange(2.0, 6.0)}%` };
-            impacts.loser = { symbol: 'QQQ (Tech)', change: `-${randomChange(1.0, 3.5)}%` };
-            // Hotspots: Middle East, Eastern Europe, South China Sea
+            impacts.gainer = { symbol: 'LMT', change: `+${randomChange(2.0, 6.0)}%` };
+            impacts.loser = { symbol: 'QQQ', change: `-${randomChange(1.0, 3.5)}%` };
             const hotspots: [number, number][] = [[44.3, 33.3], [31.1, 48.3], [115.0, 15.0]];
             coordinates = hotspots[Math.floor(Math.random() * hotspots.length)];
           } else if (category === 'Commodities') {
             const isGold = matchedIncludes.includes('gold');
             impacts.gainer = { symbol: isGold ? 'GOLD' : 'OIL', change: `+${randomChange(0.5, 3.0)}%` };
             impacts.loser = { symbol: isGold ? 'USD' : 'AIRLINES', change: `-${randomChange(0.5, 2.5)}%` };
-            // Resource centers (e.g. Texas, Saudi Arabia, Australia)
             const resources: [number, number][] = [[-100.0, 31.0], [45.0, 25.0], [133.0, -25.0]];
             coordinates = resources[Math.floor(Math.random() * resources.length)];
           } else if (category === 'Markets') {
             impacts.gainer = { symbol: 'VIX', change: `+${randomChange(4.0, 10.0)}%` };
             impacts.loser = { symbol: 'SPY', change: `-${randomChange(0.5, 2.0)}%` };
-            // NY, London, Tokyo
             const markets: [number, number][] = [[-74.0, 40.7], [-0.1, 51.5], [139.6, 35.6]];
             coordinates = markets[Math.floor(Math.random() * markets.length)];
           } else {
             impacts.gainer = { symbol: 'CASH', change: `+0.01%` };
-            impacts.loser = { symbol: 'TECH-ETF', change: `-${randomChange(0.1, 1.5)}%` };
-            // Silicon Valley, Shenzhen
+            impacts.loser = { symbol: 'TECH', change: `-${randomChange(0.1, 1.5)}%` };
             const tech: [number, number][] = [[-122.0, 37.3], [114.0, 22.5]];
             coordinates = tech[Math.floor(Math.random() * tech.length)];
           }
+
+          // Generate Text and run the AI Analyst Math Sentiment Extractor
+          const summaryText = (item.contentSnippet || item.content || '').substring(0, 250) + '...';
+          const aiSentiment = analyzeSentiment(titleAndDesc);
 
           allNews.push({
             id: item.guid || item.link || Math.random().toString(36).substring(7),
@@ -141,21 +142,27 @@ export async function GET() {
             link: item.link || '#',
             pubDate: item.pubDate || new Date().toISOString(),
             source: feed.title || feed.sourceUrl,
-            summary: (item.contentSnippet || '').substring(0, 150) + '...',
+            summary: summaryText,
             category,
             imageUrl,
             impacts: impacts as any,
-            coordinates
+            coordinates,
+            sentiment: aiSentiment
           });
         }
       }
     }
 
-    // Sort by newest first
     allNews.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+    
+    // Run the TF-IDF Extractor to compile the global operational briefing from the Top 30 items
+    const topSummaries = allNews.slice(0, 30).map(n => n.title + ". " + n.summary);
+    const globalBriefing = generateBriefing(topSummaries);
 
-    // Limit to top 50
-    return NextResponse.json({ news: allNews.slice(0, 50) });
+    return NextResponse.json({ 
+      news: allNews.slice(0, 50),
+      briefing: globalBriefing
+    });
 
   } catch (error) {
     console.error('RSS parsing error:', error);
