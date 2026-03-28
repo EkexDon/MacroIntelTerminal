@@ -8,7 +8,11 @@ const RSS_SOURCES = [
   'http://feeds.bbci.co.uk/news/world/rss.xml',
   'https://www.aljazeera.com/xml/rss/all.xml',
   'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664', // Finance
-  'https://cointelegraph.com/rss' // Crypto
+  'https://cointelegraph.com/rss', // Crypto
+  'https://feeds.a.dj.com/rss/RSSMarketsMain.xml', // Wall Street Journal Markets
+  'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', // NYT World News
+  'https://www.theguardian.com/world/rss', // The Guardian Geopolitics
+  'https://techcrunch.com/feed/' // Tech / AI Industry
 ];
 
 // Keywords matching user requirements
