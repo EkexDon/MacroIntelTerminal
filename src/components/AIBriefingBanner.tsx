@@ -8,25 +8,27 @@ interface BriefingProps {
 
 export default function AIBriefingBanner({ briefing }: BriefingProps) {
   const [typedLines, setTypedLines] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
     if (!briefing || briefing.length === 0) return;
     
-    // Simple typewriter effect for the briefing lines
-    let currentLine = 0;
+    // Sliced target based on how much the user wants to see
+    const targetLines = briefing.slice(0, visibleCount);
+    
     const interval = setInterval(() => {
       setTypedLines(prev => {
-        if (prev.length < briefing.length) {
-          return [...prev, briefing[currentLine]];
+        // If we haven't typed all target lines yet, push the next one
+        if (prev.length < targetLines.length) {
+          return [...prev, targetLines[prev.length]];
         }
+        clearInterval(interval);
         return prev;
       });
-      currentLine++;
-      if (currentLine >= briefing.length) clearInterval(interval);
     }, 800);
 
     return () => clearInterval(interval);
-  }, [briefing]);
+  }, [briefing, visibleCount]);
 
   if (!briefing || briefing.length === 0) return null;
 
@@ -59,6 +61,15 @@ export default function AIBriefingBanner({ briefing }: BriefingProps) {
               </p>
             ))}
           </div>
+          
+          {visibleCount < briefing.length && (
+            <button 
+              onClick={() => setVisibleCount(v => v + 3)}
+              className="mt-4 text-[10px] font-mono tracking-widest px-4 py-2 rounded bg-black/60 text-primary border border-primary/30 uppercase hover:bg-primary/20 hover:border-primary/60 transition-all duration-300 flex items-center gap-2 group/btn"
+            >
+              <span className="group-hover/btn:animate-pulse">+</span> DECRYPT MORE INTEL
+            </button>
+          )}
         </div>
       </div>
     </div>

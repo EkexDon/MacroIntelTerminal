@@ -78,7 +78,7 @@ export function generateBriefing(texts: string[]): string[] {
 
   for (const item of scoredSentences) {
     const root = item.sentence.substring(0, 20); // Basic anti-duplicate check for identical prefixes
-    if (!similaritySet.has(root) && extractedBriefing.length < 3) {
+    if (!similaritySet.has(root) && extractedBriefing.length < 12) {
       extractedBriefing.push(item.sentence + ".");
       similaritySet.add(root);
     }
