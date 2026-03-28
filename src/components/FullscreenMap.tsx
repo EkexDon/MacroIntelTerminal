@@ -12,28 +12,51 @@ interface NewsItem {
   coordinates?: [number, number] | null;
 }
 
-interface FullscreenMapProps {
-  events: NewsItem[];
+interface OsintData {
+  aviation: any[];
+  maritime: any[];
 }
 
-export default function FullscreenMap({ events }: FullscreenMapProps) {
-  const [hoveredMarker, setHoveredMarker] = useState<NewsItem | null>(null);
+interface FullscreenMapProps {
+  events: NewsItem[];
+  osint?: OsintData | null;
+}
+
+interface HoveredNode {
+  category: string;
+  title: string;
+  subtitle?: string;
+  color?: string;
+}
+
+export default function FullscreenMap({ events, osint }: FullscreenMapProps) {
+  const [hoveredNode, setHoveredNode] = useState<HoveredNode | null>(null);
   
   const validMarkers = events.filter(e => e.coordinates);
+
+  // SVGs for OSINT
+  const PlaneSVG = "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z";
+  const ShipSVG = "M21.99 15c0 3.32-8.62 5-9.99 5-1.38 0-10-1.68-10-5 0-.75.61-1.34 1.34-1.34h17.32c.73 0 1.33.59 1.33 1.34zM10 5L7.5 12h9L14 5h-4z";
 
   return (
     <div className="glass-panel p-2 md:p-6 mb-0 relative overflow-hidden group rounded-b-none border-b-0 flex items-center justify-center min-h-[40vh] md:min-h-[60vh] bg-black/20">
       
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxwYXRoIGQ9Ik0wLDBGMTAsMTBMMjAsMEwzMCwxMEw0MCwwIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMikiIGZpbGw9Im5vbmUiIC8+Cjwvc3ZnPg==')] opacity-40 pointer-events-none" />
 
-      {hoveredMarker && (
+      {hoveredNode && (
         <div className="absolute top-4 left-4 max-w-sm z-20 p-4 bg-surface/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl pointer-events-none animate-in fade-in zoom-in-95 duration-200">
-          <span className="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-black/80 text-primary uppercase border border-primary/30 mb-2 inline-block shadow-[0_0_10px_rgba(0,255,136,0.2)]">
-            {hoveredMarker.category}
+          <span 
+            className="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-black/80 uppercase border mb-2 inline-block"
+            style={{ color: hoveredNode.color || 'var(--primary-color)', borderColor: hoveredNode.color || 'var(--primary-color)' }}
+          >
+            {hoveredNode.category}
           </span>
           <p className="text-base font-['Outfit'] font-semibold text-white leading-snug">
-            {hoveredMarker.title}
+            {hoveredNode.title}
           </p>
+          {hoveredNode.subtitle && (
+            <p className="text-xs font-mono text-gray-400 mt-1">{hoveredNode.subtitle}</p>
+          )}
           <div className="mt-2 text-[10px] text-gray-500 font-mono tracking-widest uppercase">
             TARGET ACQUIRED
           </div>
@@ -58,18 +81,65 @@ export default function FullscreenMap({ events }: FullscreenMapProps) {
               ))
             }
           </Geographies>
+
+          {/* OSINT LAYER: Maritime shipping vectors */}
+          {osint?.maritime.map((ship) => (
+            <Marker 
+              key={ship.id} 
+              coordinates={ship.coordinates}
+              onMouseEnter={() => setHoveredNode({
+                category: `OSINT: ${ship.type}`,
+                title: ship.name,
+                subtitle: `Lat: ${ship.coordinates[1].toFixed(2)} | Lng: ${ship.coordinates[0].toFixed(2)}`,
+                color: '#fff'
+              })}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              <g transform="translate(-12, -12) scale(0.6)">
+                <path d={ShipSVG} fill="#ffffff" opacity={0.8} />
+              </g>
+              <circle r={12} fill="transparent" className="cursor-crosshair" />
+            </Marker>
+          ))}
+
+          {/* OSINT LAYER: Aviation active flights */}
+          {osint?.aviation.map((plane) => (
+            <Marker 
+              key={plane.id} 
+              coordinates={[plane.lng, plane.lat]}
+              onMouseEnter={() => setHoveredNode({
+                category: `OSINT: AIRBORNE`,
+                title: `FLIGHT ${plane.callsign}`,
+                subtitle: `ALT: ${plane.altitude}m | VEL: ${Math.round(plane.velocity * 3.6)}km/h | LOC: ${plane.country}`,
+                color: '#00e5ff'
+              })}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              <g transform={`translate(-12, -12) scale(0.5) rotate(${plane.heading || 0}, 12, 12)`}>
+                <path d={PlaneSVG} fill="#00e5ff" opacity={0.6} className="drop-shadow-[0_0_5px_#00e5ff]" />
+              </g>
+              <circle r={10} fill="transparent" className="cursor-crosshair" />
+            </Marker>
+          ))}
+
+          {/* SONAR LAYER: News Intelligence Locations */}
           {validMarkers.map((marker) => {
             const isDanger = marker.category === 'War/Politics' || marker.category === 'Industry';
+            const color = isDanger ? 'var(--danger-color)' : 'var(--primary-color)';
             return (
               <Marker 
                 key={marker.id} 
                 coordinates={marker.coordinates!}
-                onMouseEnter={() => setHoveredMarker(marker)}
-                onMouseLeave={() => setHoveredMarker(null)}
+                onMouseEnter={() => setHoveredNode({
+                  category: marker.category,
+                  title: marker.title,
+                  color: color
+                })}
+                onMouseLeave={() => setHoveredNode(null)}
               >
                 <circle r={10} fill="transparent" className="cursor-crosshair" />
-                <circle r={6} fill={isDanger ? 'var(--danger-color)' : 'var(--primary-color)'} className="animate-ping opacity-60 pointer-events-none" />
-                <circle r={3} fill={isDanger ? 'var(--danger-color)' : 'var(--primary-color)'} className="pointer-events-none drop-shadow-[0_0_8px_currentColor]" />
+                <circle r={6} fill={color} className="animate-ping opacity-60 pointer-events-none" />
+                <circle r={3} fill={color} className="pointer-events-none drop-shadow-[0_0_8px_currentColor]" />
               </Marker>
             );
           })}

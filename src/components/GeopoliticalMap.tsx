@@ -13,16 +13,33 @@ interface MapMarker {
   coordinates: [number, number];
 }
 
+interface OsintData {
+  aviation: any[];
+  maritime: any[];
+}
+
+interface HoveredNode {
+  category: string;
+  title: string;
+  color?: string;
+}
+
 export default function GeopoliticalMap() {
   const router = useRouter();
   const [markers, setMarkers] = useState<MapMarker[]>([]);
-  const [hoveredMarker, setHoveredMarker] = useState<MapMarker | null>(null);
+  const [osint, setOsint] = useState<OsintData | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<HoveredNode | null>(null);
 
   useEffect(() => {
-    const fetchNews = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('/api/news');
-        const json = await res.json();
+        const [newsRes, osintRes] = await Promise.all([
+          fetch('/api/news'),
+          fetch('/api/osint')
+        ]);
+        const json = await newsRes.json();
+        const osintJson = await osintRes.json();
+
         if (json.news) {
           const validMarkers = json.news
             .filter((n: any) => n.coordinates)
@@ -34,15 +51,19 @@ export default function GeopoliticalMap() {
             }));
           setMarkers(validMarkers);
         }
+        if (osintJson) setOsint(osintJson);
       } catch (err) {
         console.error("Map data fetch error:", err);
       }
     };
     
-    fetchNews();
-    const interval = setInterval(fetchNews, 60000);
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const PlaneSVG = "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z";
+  const ShipSVG = "M21.99 15c0 3.32-8.62 5-9.99 5-1.38 0-10-1.68-10-5 0-.75.61-1.34 1.34-1.34h17.32c.73 0 1.33.59 1.33 1.34zM10 5L7.5 12h9L14 5h-4z";
 
   return (
     <div 
@@ -60,13 +81,16 @@ export default function GeopoliticalMap() {
         </span>
       </div>
 
-      {hoveredMarker && (
+      {hoveredNode && (
         <div className="absolute top-16 left-6 right-6 z-20 p-3 bg-surface/90 backdrop-blur-md border border-white/10 rounded-lg shadow-lg pointer-events-none animate-in fade-in duration-200">
-          <span className="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-black/50 text-primary uppercase border border-primary/20 mb-1 inline-block">
-            {hoveredMarker.category}
+          <span 
+            className="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-black/50 uppercase border mb-1 inline-block"
+            style={{ color: hoveredNode.color || 'var(--primary-color)', borderColor: hoveredNode.color || 'var(--primary-color)' }}
+          >
+            {hoveredNode.category}
           </span>
           <p className="text-sm font-['Outfit'] font-semibold text-white line-clamp-2">
-            {hoveredMarker.title}
+            {hoveredNode.title}
           </p>
         </div>
       )}
@@ -90,18 +114,61 @@ export default function GeopoliticalMap() {
               ))
             }
           </Geographies>
+
+          {/* OSINT LAYER: Maritime */}
+          {osint?.maritime.map((ship) => (
+            <Marker 
+              key={ship.id} 
+              coordinates={ship.coordinates}
+              onMouseEnter={() => setHoveredNode({
+                category: `OSINT: ${ship.type}`,
+                title: ship.name,
+                color: '#fff'
+              })}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              <g transform="translate(-10, -10) scale(0.5)">
+                <path d={ShipSVG} fill="#ffffff" opacity={0.6} />
+              </g>
+            </Marker>
+          ))}
+
+          {/* OSINT LAYER: Aviation */}
+          {osint?.aviation.map((plane) => (
+            <Marker 
+              key={plane.id} 
+              coordinates={[plane.lng, plane.lat]}
+              onMouseEnter={() => setHoveredNode({
+                category: `OSINT: AIRBORNE`,
+                title: plane.callsign,
+                color: '#00e5ff'
+              })}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              <g transform={`translate(-8, -8) scale(0.4) rotate(${plane.heading || 0}, 12, 12)`}>
+                <path d={PlaneSVG} fill="#00e5ff" opacity={0.5} />
+              </g>
+            </Marker>
+          ))}
+
+          {/* SONAR LAYER: News Intelligence */}
           {markers.map((marker) => {
             const isDanger = marker.category === 'War/Politics' || marker.category === 'Industry';
+            const color = isDanger ? 'var(--danger-color)' : 'var(--primary-color)';
             return (
               <Marker 
                 key={marker.id} 
                 coordinates={marker.coordinates}
-                onMouseEnter={() => setHoveredMarker(marker)}
-                onMouseLeave={() => setHoveredMarker(null)}
+                onMouseEnter={() => setHoveredNode({
+                  category: marker.category,
+                  title: marker.title,
+                  color: color
+                })}
+                onMouseLeave={() => setHoveredNode(null)}
               >
                 <circle r={8} fill="transparent" className="cursor-crosshair" />
-                <circle r={6} fill={isDanger ? 'var(--danger-color)' : 'var(--primary-color)'} className="animate-ping opacity-40 pointer-events-none" />
-                <circle r={2} fill={isDanger ? 'var(--danger-color)' : 'var(--primary-color)'} className="pointer-events-none" />
+                <circle r={6} fill={color} className="animate-ping opacity-40 pointer-events-none" />
+                <circle r={2} fill={color} className="pointer-events-none" />
               </Marker>
             );
           })}
