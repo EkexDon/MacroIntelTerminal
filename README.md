@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Macro Intel Terminal
 
-## Getting Started
+![Macro Intel Terminal](https://macro-intel-terminal.vercel.app/og-image.jpg) <!-- Update with your actual screenshot URL if you add one later -->
 
-First, run the development server:
+**Live Deployment:** [macro-intel-terminal.vercel.app](https://macro-intel-terminal.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The **Macro Intel Terminal** is a high-end, real-time financial and geopolitical command center. Designed with a premium hacker-dashboard aesthetic, it aggregates global intelligence, filters out local noise, and provides live, correlated insights into world events, crypto, commodities, and equities.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚡ Core Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* **📡 Central Intelligence Feed:** Aggregates real-time news from premium RSS sources (BBC, Al Jazeera, CNBC, CoinTelegraph), automatically filtering out low-level noise to focus strictly on macro-economic and geopolitical events.
+* **🗺️ Global Tactical Map:** Interactive 2D vector map rendering pulsing heat signatures and SONAR tooltips for geo-linked intelligence. Click the map to enter the full-scale fullscreen command center.
+* **📈 Live Impact Correlation:** Every news event dynamically correlates to immediate market gainers and losers in real-time.
+* **📊 SVG Sparkline Tracking:** Fluid, natively rendered SVG sparklines track the 24-hour trajectories of Macro Indicators (VIX, BTC.D, Fear/Greed) and Sector Capital Flows.
+* **🎛️ Keyword SONAR Alerts:** Define high-priority keywords (e.g., "Uranium", "Cyberattack"). Incoming matches trigger a synthesized Web Audio API sine-wave ping and a synchronized visual red flash.
+* **🚨 Critical Directive Banner:** Prominently isolates the single most high-impact breaking story at the top of the interface with deep glassmorphism image blur logic.
+* **🌗 Day/Night Optics:** One-click toggle between the classic premium dark aesthetic and a high-visibility light mode with customized WebKit scrollbars.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Architecture & Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is built for blistering Edge performance and strict React 19 / Next.js 15 routing:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **Framework:** [Next.js (App Router)](https://nextjs.org/)
+* **Core Language:** [TypeScript](https://www.typescriptlang.org/)
+* **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS Modules (Glassmorphism & GPU Acceleration)
+* **Data Pipelines:** `rss-parser` + Native Next.js Caching & Backend Proxying (Bypassing CORS)
+* **Visualizations:** `react-simple-maps` 
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🚀 Local Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To run the Terminal locally on your own machine:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/EkexDon/MacroIntelTerminal.git
+   cd MacroIntelTerminal
+   ```
+2. **Install dependencies:**  
+   *Note: Because of strict React 19 dependencies, ensure you use the legacy peer flags if resolving conflicts.*
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+3. **Initialize the Uplink (Dev Server):**
+   ```bash
+   npm run dev
+   ```
+4. Access the terminal at `http://localhost:3000`.
+
+---
+
+## 🧠 Developed by Team Chef
+Built as an autonomous agentic experiment pushing the limits of modern UI/UX data-dashboard aesthetics.
+
+**No API Keys Required.** All intelligence is scraped, mapped, and mathematically simulated for impact on the fly using public global feeds.
