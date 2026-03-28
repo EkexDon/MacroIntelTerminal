@@ -31,6 +31,7 @@ interface NewsFeedProps {
 export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [briefing, setBriefing] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const seenIds = useRef<Set<string>>(new Set());
 
@@ -79,23 +80,51 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
     </div>
   );
 
+  const filteredNews = news.filter(item => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return item.title.toLowerCase().includes(query) || 
+           item.summary.toLowerCase().includes(query) || 
+           item.category.toLowerCase().includes(query) || 
+           item.source.toLowerCase().includes(query);
+  });
+
   return (
     <div className="glass-panel p-6 h-full min-h-[800px] max-h-[1200px] overflow-hidden flex flex-col shadow-[inset_0_0_100px_rgba(0,0,0,0.2)]">
-      <div className="flex justify-between items-center mb-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-0 gap-4">
         <h2 className="text-2xl font-['Outfit'] font-bold tracking-wider text-gradient uppercase">Global Intelligence Memos</h2>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-danger animate-pulse"></div>
-          <span className="text-xs text-danger font-mono tracking-widest uppercase">Live Feed</span>
+        
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          {/* Dynamic Search Bar */}
+          <div className="relative flex-1 md:w-64 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-4 w-4 text-gray-500 group-focus-within:text-primary transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Query Feed..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 text-foreground text-xs font-mono rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-gray-600"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-2 h-2 rounded-full bg-danger animate-pulse"></div>
+            <span className="text-xs text-danger font-mono tracking-widest uppercase hidden sm:inline">Live Feed</span>
+          </div>
         </div>
       </div>
 
       <AIBriefingBanner briefing={briefing} />
 
       <div className="flex-1 overflow-y-auto pr-3 space-y-5">
-        {news.length === 0 ? (
-          <p className="text-gray-500 font-mono text-sm text-center mt-10">No critical events detected.</p>
+        {filteredNews.length === 0 ? (
+          <p className="text-gray-500 font-mono text-sm text-center mt-10">No critical events matching "{searchQuery}" detected.</p>
         ) : (
-          news.map((item) => {
+          filteredNews.map((item) => {
             // Determine sentiment badge styling
             let sentimentColor = 'text-gray-400 border-gray-600';
             if (item.sentiment?.label === 'BULLISH') sentimentColor = 'text-primary border-primary/30';
@@ -145,7 +174,7 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
                   <div className="mt-4 flex gap-4 text-[10px] text-gray-600 uppercase tracking-widest">
                     <span>Secure Uplink: {item.source}</span>
                     {item.sentiment?.triggers && item.sentiment.triggers.length > 0 && (
-                      <span className="text-primary/60">Triggers: {item.sentiment.triggers.join(', ')}</span>
+                      <span className="text-primary/60 hidden sm:inline">Triggers: {item.sentiment.triggers.join(', ')}</span>
                     )}
                   </div>
                 </div>
