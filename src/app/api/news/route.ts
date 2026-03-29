@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 import { analyzeSentiment, generateBriefing } from '@/lib/aiAnalyst';
+import { extractCoordinates } from '@/lib/geoCoder';
 
 const parser = new Parser();
 
@@ -107,30 +108,23 @@ export async function GET() {
           if (category === 'Crypto') {
             impacts.gainer = { symbol: matchedIncludes.includes('bitcoin') ? 'BTC' : 'SOL', change: `+${randomChange(1.5, 5.0)}%` };
             impacts.loser = { symbol: 'FIAT-IDX', change: `-${randomChange(0.2, 1.2)}%` };
-            const cryptoSpots: [number, number][] = [[-88.89, 13.79], [-80.19, 25.76], [55.27, 25.20]];
-            coordinates = cryptoSpots[Math.floor(Math.random() * cryptoSpots.length)];
           } else if (category === 'War/Politics') {
             impacts.gainer = { symbol: 'LMT', change: `+${randomChange(2.0, 6.0)}%` };
             impacts.loser = { symbol: 'QQQ', change: `-${randomChange(1.0, 3.5)}%` };
-            const hotspots: [number, number][] = [[44.3, 33.3], [31.1, 48.3], [115.0, 15.0]];
-            coordinates = hotspots[Math.floor(Math.random() * hotspots.length)];
           } else if (category === 'Commodities') {
             const isGold = matchedIncludes.includes('gold');
             impacts.gainer = { symbol: isGold ? 'GOLD' : 'OIL', change: `+${randomChange(0.5, 3.0)}%` };
             impacts.loser = { symbol: isGold ? 'USD' : 'AIRLINES', change: `-${randomChange(0.5, 2.5)}%` };
-            const resources: [number, number][] = [[-100.0, 31.0], [45.0, 25.0], [133.0, -25.0]];
-            coordinates = resources[Math.floor(Math.random() * resources.length)];
           } else if (category === 'Markets') {
             impacts.gainer = { symbol: 'VIX', change: `+${randomChange(4.0, 10.0)}%` };
             impacts.loser = { symbol: 'SPY', change: `-${randomChange(0.5, 2.0)}%` };
-            const markets: [number, number][] = [[-74.0, 40.7], [-0.1, 51.5], [139.6, 35.6]];
-            coordinates = markets[Math.floor(Math.random() * markets.length)];
           } else {
             impacts.gainer = { symbol: 'CASH', change: `+0.01%` };
             impacts.loser = { symbol: 'TECH', change: `-${randomChange(0.1, 1.5)}%` };
-            const tech: [number, number][] = [[-122.0, 37.3], [114.0, 22.5]];
-            coordinates = tech[Math.floor(Math.random() * tech.length)];
           }
+
+          // Extract real geographic coordinates from the article text
+          coordinates = extractCoordinates(titleAndDesc);
 
           // Generate Text and run the AI Analyst Math Sentiment Extractor
           const summaryText = (item.contentSnippet || item.content || '').substring(0, 250) + '...';
