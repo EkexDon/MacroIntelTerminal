@@ -9,24 +9,21 @@ const MORSE_CODE: Record<string, string> = {
   'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
   'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
   '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
-  '8': '---..', '9': '----.', ' ': ' '
+  '8': '---..', '9': '----.', ' ': ' ', ',': '--..--', '.': '.-.-.-',
+  ':': '---...', '-': '-....-', "'": '.----.', '/': '-..-.'
 };
 
-const INTERCEPTS = [
-  "FLEET MOVEMENT DETECTED SOUTH CHINA SEA",
-  "SIGNAL LOST SUEZ CANAL",
-  "SECURE CHANNEL ESTABLISHED",
-  "ENCRYPTED PACKET INTERCEPTED HORMUZ",
-  "STRATEGIC ASSET RELOCATED TAIWAN",
-  "ORACLE UNKNOWN WHALE ACCUMULATION",
-  "USGS SEISMIC ANOMALY SECTOR 7",
-  "DEFCON MATRIX CALIBRATED",
-  "BLACKROCK LIQUIDITY INJECTION DETECTED"
+// Fallback headlines used only if the news API fails
+const FALLBACK_INTERCEPTS = [
+  "STANDBY FOR LIVE INTELLIGENCE FEED",
+  "CONNECTING TO SECURE RSS UPLINK",
 ];
 
 export default function RadioIntercept() {
   const [active, setActive] = useState(false);
   const [interceptText, setInterceptText] = useState<string>("");
+  const [liveHeadlines, setLiveHeadlines] = useState<string[]>([]);
+  const headlineIndexRef = useRef(0);
   
   const audioCtxRef = useRef<AudioContext | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +37,46 @@ export default function RadioIntercept() {
     charTimeoutsRef.current = [];
   };
 
-  const toggleRadio = () => {
+  // Fetch live headlines from the real news API when radio is activated
+  const fetchLiveHeadlines = async () => {
+    try {
+      const res = await fetch('/api/news');
+      const json = await res.json();
+      if (json.news && json.news.length > 0) {
+        // Extract and clean titles, truncate for morse (max 60 chars)
+        const headlines = json.news
+          .slice(0, 20)
+          .map((n: any) => {
+            const clean = (n.title || '')
+              .toUpperCase()
+              .replace(/[^A-Z0-9 ,.\-':\/]/g, '') // strip non-morseable chars
+              .substring(0, 60)
+              .trim();
+            return clean;
+          })
+          .filter((h: string) => h.length > 10);
+        
+        if (headlines.length > 0) {
+          setLiveHeadlines(headlines);
+          headlineIndexRef.current = 0;
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Radio intercept: failed to load live feed', e);
+    }
+    // Fallback
+    setLiveHeadlines(FALLBACK_INTERCEPTS);
+  };
+
+  const getNextHeadline = (): string => {
+    const pool = liveHeadlines.length > 0 ? liveHeadlines : FALLBACK_INTERCEPTS;
+    const headline = pool[headlineIndexRef.current % pool.length];
+    headlineIndexRef.current++;
+    return headline;
+  };
+
+  const toggleRadio = async () => {
     if (active) {
       if (audioCtxRef.current) {
         audioCtxRef.current.close();
@@ -50,6 +86,11 @@ export default function RadioIntercept() {
       setActive(false);
       setInterceptText("");
     } else {
+      setActive(true);
+      
+      // Fetch real headlines FIRST
+      await fetchLiveHeadlines();
+
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const ctx = new AudioContext();
       audioCtxRef.current = ctx;
@@ -58,7 +99,7 @@ export default function RadioIntercept() {
       const playStaticBurst = () => {
         if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') return;
         
-        const bufferSize = ctx.sampleRate * (Math.random() * 0.5 + 0.2); // 0.2s - 0.7s of noise
+        const bufferSize = ctx.sampleRate * (Math.random() * 0.5 + 0.2);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -85,11 +126,11 @@ export default function RadioIntercept() {
         timeoutRef.current = setTimeout(playStaticBurst, Math.random() * 8000 + 4000);
       };
 
-      // Play authentic morse code synced with text rendering
+      // Play authentic morse code synced with text rendering — now from LIVE headlines
       const playSynchronizedIntercept = () => {
         if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') return;
         
-        const message = INTERCEPTS[Math.floor(Math.random() * INTERCEPTS.length)];
+        const message = getNextHeadline();
         setInterceptText(""); // Reset text
         
         const DOT_MS = 60;
@@ -101,15 +142,13 @@ export default function RadioIntercept() {
         let currentTimeOffsetMs = 0;
         let builtText = "";
 
-        const hz = 600 + Math.random() * 200; // slightly randomize pitch per transmission
+        const hz = 600 + Math.random() * 200;
 
-        // Parse message
         for (let i = 0; i < message.length; i++) {
           const char = message[i];
           const morse = MORSE_CODE[char];
           
           if (!morse) {
-            // Space between words
             currentTimeOffsetMs += WORD_SPACE_MS - LETTER_SPACE_MS;
             builtText += " ";
             
@@ -120,12 +159,10 @@ export default function RadioIntercept() {
             continue;
           }
 
-          // Schedule audio for this character's morse symbols
           for (let j = 0; j < morse.length; j++) {
             const symbol = morse[j];
             const durationMs = symbol === '.' ? DOT_MS : DASH_MS;
             
-            // Schedule Oscillator
             const startTime = ctx.currentTime + (currentTimeOffsetMs / 1000);
             const durationSec = durationMs / 1000;
             
@@ -149,23 +186,29 @@ export default function RadioIntercept() {
 
           builtText += char;
           const txt = builtText;
-          // Reveal character right as its morse finishes transmitting
           charTimeoutsRef.current.push(
             setTimeout(() => { setInterceptText(txt); }, currentTimeOffsetMs)
           );
 
-          currentTimeOffsetMs += LETTER_SPACE_MS - SYMBOL_SPACE_MS; // gap between letters
+          currentTimeOffsetMs += LETTER_SPACE_MS - SYMBOL_SPACE_MS;
         }
 
-        // Schedule next transmission
-        sequenceTimeoutRef.current = setTimeout(playSynchronizedIntercept, currentTimeOffsetMs + (Math.random() * 5000 + 4000));
+        // After finishing one headline, move to the next after a short static pause
+        sequenceTimeoutRef.current = setTimeout(playSynchronizedIntercept, currentTimeOffsetMs + (Math.random() * 3000 + 3000));
       };
 
       playStaticBurst();
-      sequenceTimeoutRef.current = setTimeout(playSynchronizedIntercept, 2000);
-      setActive(true);
+      // Small initial delay to let the headlines load
+      sequenceTimeoutRef.current = setTimeout(playSynchronizedIntercept, 1500);
     }
   };
+
+  // Refresh headlines every 5 minutes while active
+  useEffect(() => {
+    if (!active) return;
+    const interval = setInterval(fetchLiveHeadlines, 300000);
+    return () => clearInterval(interval);
+  }, [active]);
 
   useEffect(() => {
     return () => {
@@ -194,7 +237,7 @@ export default function RadioIntercept() {
         }`}
       >
         <div className={`w-2 h-2 rounded-full ${active ? 'bg-danger animate-pulse' : 'bg-gray-600'}`}></div>
-        <span>{active ? 'COMMS SECURED' : 'RADIO INTERCEPT'}</span>
+        <span>{active ? 'LIVE INTEL' : 'RADIO INTERCEPT'}</span>
       </button>
     </div>
   );
