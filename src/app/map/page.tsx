@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import FullscreenMap from '@/components/FullscreenMap';
+import FullscreenMap, { CHOKEPOINTS } from '@/components/FullscreenMap';
 import SonarEventList from '@/components/SonarEventList';
 import { useWhaleTracker, WhaleEvent } from '@/hooks/useWhaleTracker';
 import DefconMeter from '@/components/DefconMeter';
@@ -44,7 +44,25 @@ export default function MapCommandCenter() {
   const [whaleActive, setWhaleActive] = useState(true); // Default to Whales active
   const [whaleAlert, setWhaleAlert] = useState<WhaleEvent | null>(null);
 
+  const [chokepointsActive, setChokepointsActive] = useState(true);
+  const [logisticsShock, setLogisticsShock] = useState<string | null>(null);
+
   const { registerThreat } = useDefcon();
+
+  const evaluateLogisticsProximity = (lng: number, lat: number, source: string) => {
+    if (!chokepointsActive) return;
+    const hit = CHOKEPOINTS.find((c: { name: string; coords: number[] }) => {
+      const dx = c.coords[0] - lng;
+      const dy = c.coords[1] - lat;
+      return Math.sqrt(dx*dx + dy*dy) < 5; // 5 degree radius (~500km threshold)
+    });
+    
+    if (hit) {
+      registerThreat(60); // Critical Logistics Failure
+      setLogisticsShock(`CRITICAL SHOCK: Massive ${source} anomaly detected within 500km of ${hit.name}. Proceed with extreme caution.`);
+      setTimeout(() => setLogisticsShock(null), 8000);
+    }
+  };
 
   useWhaleTracker(whaleActive, 1000000, (whale) => {
     setWhales(prev => [whale, ...prev].slice(0, 15));
@@ -90,7 +108,10 @@ export default function MapCommandCenter() {
           
           // Trigger severe threat level on recent (1hr) massive >5.5 magnitude events
           const critical = json.anomalies.find((a: any) => a.mag >= 5.5 && (Date.now() - a.time) < 3600000);
-          if (critical) registerThreat(40);
+          if (critical) {
+            registerThreat(40);
+            evaluateLogisticsProximity(critical.lng, critical.lat, 'TECTONIC');
+          }
         }
       } catch (e) {
         console.error('Failed to load seismic data', e);
@@ -151,6 +172,19 @@ export default function MapCommandCenter() {
             </button>
           </div>
 
+          {/* Chokepoints Toggle */}
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-mono tracking-widest uppercase whitespace-nowrap hidden sm:inline ${chokepointsActive ? 'text-[#ff0033] drop-shadow-[0_0_5px_rgba(255,0,51,0.5)]' : 'text-gray-500'}`}>
+              LOGISTICS
+            </span>
+            <button 
+              onClick={() => setChokepointsActive(!chokepointsActive)}
+              className={`w-10 h-5 rounded-full relative shrink-0 transition-colors duration-300 ${chokepointsActive ? 'bg-[#ff0033]/20 border border-[#ff0033]/50' : 'bg-black border border-white/20'}`}
+            >
+              <div className={`w-3 h-3 rounded-full absolute top-[3px] transition-transform duration-300 ${chokepointsActive ? 'bg-[#ff0033] translate-x-[22px] shadow-[0_0_10px_rgba(255,0,51,0.8)]' : 'bg-gray-500 translate-x-[4px]'}`} />
+            </button>
+          </div>
+
           {/* Whale Toggle */}
           <div className="flex items-center gap-2">
             <span className={`text-[10px] font-mono tracking-widest uppercase whitespace-nowrap hidden sm:inline ${whaleActive ? 'text-[#ffcc00] drop-shadow-[0_0_5px_rgba(255,204,0,0.5)]' : 'text-gray-500'}`}>
@@ -188,6 +222,25 @@ export default function MapCommandCenter() {
           </div>
         )}
 
+        {/* Logistics Shock Intercept Hologram */}
+        {logisticsShock && (
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[100] pointer-events-none animate-in slide-in-from-bottom-10 fade-in duration-500">
+            <div className="glass-panel border-[#ff0033]/50 bg-[#1a0000]/90 px-8 py-4 shadow-[0_0_30px_rgba(255,0,51,0.5)] text-center w-[300px] md:w-[600px] flex items-center gap-4">
+               <div className="w-10 h-10 rounded-full border-2 border-dashed border-[#ff0033] animate-[spin_3s_linear_infinite] flex items-center justify-center shrink-0">
+                  <div className="w-4 h-4 bg-[#ff0033] rounded-full animate-pulse blur-[2px]" />
+               </div>
+               <div className="text-left font-mono">
+                 <h2 className="text-[#ff0033] font-bold tracking-widest uppercase text-lg animate-pulse mb-1">
+                   LOGISTICS SHOCK ALERT
+                 </h2>
+                 <p className="text-gray-300 text-xs">
+                   {logisticsShock}
+                 </p>
+               </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex-1 flex items-center justify-center font-mono text-gray-500 tracking-widest animate-pulse">
             CALIBRATING GEOGRAPHIC SENSORS...
@@ -199,6 +252,7 @@ export default function MapCommandCenter() {
               osint={radarActive ? osint : null} 
               seismic={seismicActive ? seismic : null}
               whales={whaleActive ? whales : undefined}
+              chokepointsActive={chokepointsActive}
             />
             <SonarEventList events={news} />
           </div>

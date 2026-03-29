@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
+
+export const CHOKEPOINTS = [
+  { name: 'Suez Canal', coords: [32.33, 30.60] },
+  { name: 'Panama Canal', coords: [-79.91, 9.08] },
+  { name: 'Strait of Hormuz', coords: [56.28, 26.56] },
+  { name: 'Strait of Malacca', coords: [101.30, 2.90] },
+  { name: 'Bab-el-Mandeb', coords: [43.33, 12.58] }
+];
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -40,6 +48,7 @@ interface FullscreenMapProps {
   osint?: OsintData | null;
   seismic?: SeismicAnomaly[] | null;
   whales?: WhaleEvent[] | null;
+  chokepointsActive?: boolean;
 }
 
 interface HoveredNode {
@@ -49,7 +58,7 @@ interface HoveredNode {
   color?: string;
 }
 
-export default function FullscreenMap({ events, osint, seismic, whales }: FullscreenMapProps) {
+export default function FullscreenMap({ events, osint, seismic, whales, chokepointsActive }: FullscreenMapProps) {
   const [hoveredNode, setHoveredNode] = useState<HoveredNode | null>(null);
   
   const validMarkers = events.filter(e => e.coordinates);
@@ -85,125 +94,150 @@ export default function FullscreenMap({ events, osint, seismic, whales }: Fullsc
 
       <div className="w-full max-w-6xl relative z-10 transition-transform duration-1000">
         <ComposableMap projectionConfig={{ scale: 160 }} width={800} height={400} style={{ width: "100%", height: "100%" }}>
-          <Geographies geography={geoUrl}>
-            {({ geographies }) =>
-              geographies.map((geo) => (
-                <Geography 
-                  key={geo.rsmKey} 
-                  geography={geo} 
-                  strokeWidth={0.3}
-                  style={{
-                    default: { fill: "var(--fg-color)", fillOpacity: 0.08, stroke: "var(--fg-color)", strokeOpacity: 0.15, outline: "none" },
-                    hover: { fill: "var(--primary-color)", fillOpacity: 0.2, stroke: "var(--primary-color)", strokeOpacity: 0.5, outline: "none" },
-                    pressed: { fill: "var(--primary-color)", fillOpacity: 0.1, outline: "none" },
-                  }}
-                />
-              ))
-            }
-          </Geographies>
+          <ZoomableGroup>
+            <Geographies geography={geoUrl}>
+              {({ geographies }) =>
+                geographies.map((geo) => (
+                  <Geography 
+                    key={geo.rsmKey} 
+                    geography={geo} 
+                    strokeWidth={0.3}
+                    style={{
+                      default: { fill: "var(--fg-color)", fillOpacity: 0.08, stroke: "var(--fg-color)", strokeOpacity: 0.15, outline: "none" },
+                      hover: { fill: "var(--primary-color)", fillOpacity: 0.2, stroke: "var(--primary-color)", strokeOpacity: 0.5, outline: "none" },
+                      pressed: { fill: "var(--primary-color)", fillOpacity: 0.1, outline: "none" },
+                    }}
+                  />
+                ))
+              }
+            </Geographies>
 
-          {/* OSINT LAYER: Maritime shipping vectors */}
-          {osint?.maritime.map((ship) => (
-            <Marker 
-              key={ship.id} 
-              coordinates={ship.coordinates}
-              onMouseEnter={() => setHoveredNode({
-                category: `OSINT: ${ship.type}`,
-                title: ship.name,
-                subtitle: `Lat: ${ship.coordinates[1].toFixed(2)} | Lng: ${ship.coordinates[0].toFixed(2)}`,
-                color: '#fff'
-              })}
-              onMouseLeave={() => setHoveredNode(null)}
-            >
-              <g transform="translate(-12, -12) scale(0.6)">
-                <path d={ShipSVG} fill="#ffffff" opacity={0.8} />
-              </g>
-              <circle r={12} fill="transparent" className="cursor-crosshair" />
-            </Marker>
-          ))}
-
-          {/* OSINT LAYER: Aviation active flights */}
-          {osint?.aviation.map((plane) => (
-            <Marker 
-              key={plane.id} 
-              coordinates={[plane.lng, plane.lat]}
-              onMouseEnter={() => setHoveredNode({
-                category: `OSINT: AIRBORNE`,
-                title: `FLIGHT ${plane.callsign}`,
-                subtitle: `ALT: ${plane.altitude}m | VEL: ${Math.round(plane.velocity * 3.6)}km/h | LOC: ${plane.country}`,
-                color: '#00e5ff'
-              })}
-              onMouseLeave={() => setHoveredNode(null)}
-            >
-              <g transform={`translate(-12, -12) scale(0.5) rotate(${plane.heading || 0}, 12, 12)`}>
-                <path d={PlaneSVG} fill="#00e5ff" opacity={0.6} className="drop-shadow-[0_0_5px_#00e5ff]" />
-              </g>
-              <circle r={10} fill="transparent" className="cursor-crosshair" />
-            </Marker>
-          ))}
-
-          {/* SEISMIC LAYER: Global Tectonic/Radiological Anomalies */}
-          {seismic?.map((anomaly) => {
-            const radius = Math.max(anomaly.mag * 1.5, 3);
-            return (
+            {/* OSINT LAYER: Maritime shipping vectors */}
+            {osint?.maritime.map((ship) => (
               <Marker 
-                key={anomaly.id} 
-                coordinates={anomaly.coordinates}
+                key={ship.id} 
+                coordinates={ship.coordinates}
                 onMouseEnter={() => setHoveredNode({
-                  category: `USGS MAG ${anomaly.mag.toFixed(1)} ANOMALY`,
-                  title: anomaly.place,
-                  subtitle: `Tectonics Registered: ${new Date(anomaly.time).toLocaleTimeString()}`,
-                  color: '#9933ff' 
+                  category: `OSINT: ${ship.type}`,
+                  title: ship.name,
+                  subtitle: `Lat: ${ship.coordinates[1].toFixed(2)} | Lng: ${ship.coordinates[0].toFixed(2)}`,
+                  color: '#fff'
                 })}
                 onMouseLeave={() => setHoveredNode(null)}
               >
-                <circle r={radius * 2} fill="transparent" className="cursor-crosshair z-30" />
-                <circle r={radius} fill="#9933ff" className="animate-ping opacity-70 pointer-events-none" />
-                <circle r={radius / 2} fill="#9933ff" className="pointer-events-none drop-shadow-[0_0_15px_#9933ff]" />
+                <g transform="translate(-12, -12) scale(0.6)">
+                  <path d={ShipSVG} fill="#ffffff" opacity={0.8} />
+                </g>
+                <circle r={12} fill="transparent" className="cursor-crosshair" />
               </Marker>
-            );
-          })}
+            ))}
 
-          {/* WHALE LAYER: Web3 Real-Time Capital Transfers */}
-          {whales?.map((whale) => (
-            <Marker 
-              key={whale.id} 
-              coordinates={whale.coordinates}
-              onMouseEnter={() => setHoveredNode({
-                category: `WEB3 LIQUIDITY: ${whale.isBuyerMaker ? 'SELL OFF' : 'BUY WALL'}`,
-                title: `$${(whale.valueUsd / 1000000).toFixed(2)}M USD TRANSFER`,
-                subtitle: `${whale.qty.toFixed(2)} BTC @ $${whale.price.toFixed(2)} / BLOCK: ${whale.id}`,
-                color: '#ffcc00'
-              })}
-              onMouseLeave={() => setHoveredNode(null)}
-            >
-              <circle r={15} fill="transparent" className="cursor-crosshair z-50" />
-              <circle r={8} fill="#ffcc00" className="animate-ping opacity-80 pointer-events-none duration-1000" />
-              <circle r={4} fill="#ffcc00" className="pointer-events-none drop-shadow-[0_0_20px_#ffcc00]" />
-            </Marker>
-          ))}
-
-          {/* SONAR LAYER: News Intelligence Locations */}
-          {validMarkers.map((marker) => {
-            const isDanger = marker.category === 'War/Politics' || marker.category === 'Industry';
-            const color = isDanger ? 'var(--danger-color)' : 'var(--primary-color)';
-            return (
+            {/* OSINT LAYER: Aviation active flights */}
+            {osint?.aviation.map((plane) => (
               <Marker 
-                key={marker.id} 
-                coordinates={marker.coordinates!}
+                key={plane.id} 
+                coordinates={[plane.lng, plane.lat]}
                 onMouseEnter={() => setHoveredNode({
-                  category: marker.category,
-                  title: marker.title,
-                  color: color
+                  category: `OSINT: AIRBORNE`,
+                  title: `FLIGHT ${plane.callsign}`,
+                  subtitle: `ALT: ${plane.altitude}m | VEL: ${Math.round(plane.velocity * 3.6)}km/h | LOC: ${plane.country}`,
+                  color: '#00e5ff'
                 })}
                 onMouseLeave={() => setHoveredNode(null)}
               >
+                <g transform={`translate(-12, -12) scale(0.5) rotate(${plane.heading || 0}, 12, 12)`}>
+                  <path d={PlaneSVG} fill="#00e5ff" opacity={0.6} className="drop-shadow-[0_0_5px_#00e5ff]" />
+                </g>
                 <circle r={10} fill="transparent" className="cursor-crosshair" />
-                <circle r={6} fill={color} className="animate-ping opacity-60 pointer-events-none" />
-                <circle r={3} fill={color} className="pointer-events-none drop-shadow-[0_0_8px_currentColor]" />
               </Marker>
-            );
-          })}
+            ))}
+
+            {/* SEISMIC LAYER: Global Tectonic/Radiological Anomalies */}
+            {seismic?.map((anomaly) => {
+              const radius = Math.max(anomaly.mag * 1.5, 3);
+              return (
+                <Marker 
+                  key={anomaly.id} 
+                  coordinates={anomaly.coordinates}
+                  onMouseEnter={() => setHoveredNode({
+                    category: `USGS MAG ${anomaly.mag.toFixed(1)} ANOMALY`,
+                    title: anomaly.place,
+                    subtitle: `Tectonics Registered: ${new Date(anomaly.time).toLocaleTimeString()}`,
+                    color: '#9933ff' 
+                  })}
+                  onMouseLeave={() => setHoveredNode(null)}
+                >
+                  <circle r={radius * 2} fill="transparent" className="cursor-crosshair z-30" />
+                  <circle r={radius} fill="#9933ff" className="animate-ping opacity-70 pointer-events-none" />
+                  <circle r={radius / 2} fill="#9933ff" className="pointer-events-none drop-shadow-[0_0_15px_#9933ff]" />
+                </Marker>
+              );
+            })}
+
+            {/* WHALE LAYER: Web3 Real-Time Capital Transfers */}
+            {whales?.map((whale) => (
+              <Marker 
+                key={whale.id} 
+                coordinates={whale.coordinates}
+                onMouseEnter={() => setHoveredNode({
+                  category: `WEB3 LIQUIDITY: ${whale.isBuyerMaker ? 'SELL OFF' : 'BUY WALL'}`,
+                  title: `$${(whale.valueUsd / 1000000).toFixed(2)}M USD TRANSFER`,
+                  subtitle: `${whale.qty.toFixed(2)} BTC @ $${whale.price.toFixed(2)} / BLOCK: ${whale.id}`,
+                  color: '#ffcc00'
+                })}
+                onMouseLeave={() => setHoveredNode(null)}
+              >
+                <circle r={15} fill="transparent" className="cursor-crosshair z-50" />
+                <circle r={8} fill="#ffcc00" className="animate-ping opacity-80 pointer-events-none duration-1000" />
+                <circle r={4} fill="#ffcc00" className="pointer-events-none drop-shadow-[0_0_20px_#ffcc00]" />
+              </Marker>
+            ))}
+
+            {/* SONAR LAYER: News Intelligence Locations */}
+            {validMarkers.map((marker) => {
+              const isDanger = marker.category === 'War/Politics' || marker.category === 'Industry';
+              const color = isDanger ? 'var(--danger-color)' : 'var(--primary-color)';
+              return (
+                <Marker 
+                  key={marker.id} 
+                  coordinates={marker.coordinates!}
+                  onMouseEnter={() => setHoveredNode({
+                    category: marker.category,
+                    title: marker.title,
+                    color: color
+                  })}
+                  onMouseLeave={() => setHoveredNode(null)}
+                >
+                  <circle r={10} fill="transparent" className="cursor-crosshair" />
+                  <circle r={6} fill={color} className="animate-ping opacity-60 pointer-events-none" />
+                  <circle r={3} fill={color} className="pointer-events-none drop-shadow-[0_0_8px_currentColor]" />
+                </Marker>
+              );
+            })}
+
+            {/* OMNISCIENT MATRIX: GLOBAL CHOKEPOINT GEOFENCES */}
+            {chokepointsActive && CHOKEPOINTS.map((choke: any, i: number) => (
+              <Marker key={`choke-${i}`} coordinates={choke.coords as [number, number]}>
+                 {/* Danger Zone Radius */}
+                 <circle r={15} fill="none" stroke="#ff0033" strokeWidth={1} strokeDasharray="2,2" className="animate-[spin_10s_linear_infinite]" />
+                 <circle r={5} fill="#ff0033" fillOpacity={0.3} />
+                 <circle r={2} fill="#ff0033" />
+                 <text
+                   textAnchor="middle"
+                   y={25}
+                   style={{
+                     fontFamily: 'monospace',
+                     fontSize: '6px',
+                     fill: '#ff0033',
+                     fontWeight: 'bold',
+                     filter: 'drop-shadow(0px 0px 2px rgba(255,0,51,0.8))'
+                   }}
+                 >
+                   {choke.name.toUpperCase()}
+                 </text>
+              </Marker>
+            ))}
+          </ZoomableGroup>
         </ComposableMap>
       </div>
     </div>

@@ -11,6 +11,7 @@ import KeywordAlerts from "@/components/KeywordAlerts";
 import TopNewsBanner from "@/components/TopNewsBanner";
 import DefconMeter from "@/components/DefconMeter";
 import OracleMarquee from "@/components/OracleMarquee";
+import Link from 'next/link';
 
 export default function Home() {
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -97,13 +98,22 @@ export default function Home() {
 
       {/* Main Dashboard Grid */}
       <div className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full">
-        <div className="mb-6">
-          <h2 className="text-3xl font-['Outfit'] font-bold uppercase tracking-wider text-white">
-            Global Directives
-          </h2>
-          <p className="text-gray-400 font-mono mt-2 text-sm max-w-2xl">
-            Real-time aggregation of geopolitical events, crypto market movements, and industrial capital flows. Noise filtered. Essential intelligence only.
-          </p>
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-['Outfit'] font-bold uppercase tracking-wider text-white">
+              Global Directives
+            </h2>
+            <p className="text-gray-400 font-mono mt-2 text-sm max-w-2xl">
+              Real-time aggregation of geopolitical events, crypto market movements, and industrial capital flows. Noise filtered. Essential intelligence only.
+            </p>
+          </div>
+          <Link 
+            href="/nexus" 
+            className="flex items-center justify-center gap-3 px-6 py-3 bg-[#00e6e6]/10 border border-[#00e6e6]/40 text-[#00e6e6] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#00e6e6]/20 transition-all duration-300 shadow-[0_0_15px_rgba(0,230,230,0.15)] hover:shadow-[0_0_25px_rgba(0,230,230,0.4)] hover:scale-105 shrink-0"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00e6e6] animate-ping" />
+            ENTER 3D NEXUS
+          </Link>
         </div>
 
         <TopNewsBanner />
