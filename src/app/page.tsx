@@ -9,6 +9,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import GeopoliticalMap from "@/components/GeopoliticalMap";
 import KeywordAlerts from "@/components/KeywordAlerts";
 import TopNewsBanner from "@/components/TopNewsBanner";
+import DefconMeter from "@/components/DefconMeter";
+import OracleMarquee from "@/components/OracleMarquee";
 
 export default function Home() {
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -78,6 +80,7 @@ export default function Home() {
           </h1>
         </div>
         <div className="flex items-center gap-4 text-xs font-mono uppercase tracking-widest text-gray-400">
+          <DefconMeter />
           <ThemeToggle />
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
@@ -85,6 +88,9 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Polymarket Web3 Prediction Oracle */}
+      <OracleMarquee />
 
       {/* Live Market Ticker */}
       <Ticker />

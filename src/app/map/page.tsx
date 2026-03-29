@@ -5,6 +5,9 @@ import Link from 'next/link';
 import FullscreenMap from '@/components/FullscreenMap';
 import SonarEventList from '@/components/SonarEventList';
 import { useWhaleTracker, WhaleEvent } from '@/hooks/useWhaleTracker';
+import DefconMeter from '@/components/DefconMeter';
+import { useDefcon } from '@/components/DefconContext';
+import RadioIntercept from '@/components/RadioIntercept';
 
 interface NewsItem {
   id: string;
@@ -41,9 +44,12 @@ export default function MapCommandCenter() {
   const [whaleActive, setWhaleActive] = useState(true); // Default to Whales active
   const [whaleAlert, setWhaleAlert] = useState<WhaleEvent | null>(null);
 
+  const { registerThreat } = useDefcon();
+
   useWhaleTracker(whaleActive, 1000000, (whale) => {
     setWhales(prev => [whale, ...prev].slice(0, 15));
     setWhaleAlert(whale);
+    registerThreat(25); // Massive liquidity shockwave registers to Defcon Matrix
     setTimeout(() => {
         setWhaleAlert(null);
     }, 6000);
@@ -79,7 +85,13 @@ export default function MapCommandCenter() {
       try {
         const res = await fetch('/api/seismic');
         const json = await res.json();
-        if (json.anomalies) setSeismic(json.anomalies);
+        if (json.anomalies) {
+          setSeismic(json.anomalies);
+          
+          // Trigger severe threat level on recent (1hr) massive >5.5 magnitude events
+          const critical = json.anomalies.find((a: any) => a.mag >= 5.5 && (Date.now() - a.time) < 3600000);
+          if (critical) registerThreat(40);
+        }
       } catch (e) {
         console.error('Failed to load seismic data', e);
       }
@@ -110,6 +122,9 @@ export default function MapCommandCenter() {
         </div>
 
         <div className="flex items-center gap-6 z-20 overflow-x-auto hide-scrollbar">
+          <DefconMeter />
+          <RadioIntercept />
+          
           {/* OSINT Toggle */}
           <div className="flex items-center gap-2">
             <span className={`text-[10px] font-mono tracking-widest uppercase whitespace-nowrap hidden sm:inline ${radarActive ? 'text-[var(--primary-color)] drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]' : 'text-gray-500'}`}>

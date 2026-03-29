@@ -1,7 +1,7 @@
-'use client';
-
 import { useEffect, useState, useRef } from 'react';
 import AIBriefingBanner from './AIBriefingBanner';
+import DossierModal from './DossierModal';
+import { useDefcon } from './DefconContext';
 
 interface NewsItem {
   id: string;
@@ -33,7 +33,10 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
   const [briefing, setBriefing] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeDossier, setActiveDossier] = useState<{keyword: string, link: string} | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
+  
+  const { registerThreat } = useDefcon();
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -54,6 +57,14 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
               keywords.some(kw => `${n.title} ${n.summary}`.toLowerCase().includes(kw.toLowerCase()))
             );
             if (hasMatch) onAlert();
+          }
+          
+          // Defcon Threat Engine Update
+          if (newItems.length > 0 && seenIds.current.size > 0) {
+            newItems.forEach(item => {
+              if (item.sentiment?.label === 'RADIOLOGICAL') registerThreat(25);
+              if (item.sentiment?.label === 'BEARISH') registerThreat(10);
+            });
           }
 
           fetchedNews.forEach(n => seenIds.current.add(n.id));
@@ -131,13 +142,14 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
             if (item.sentiment?.label === 'BEARISH') sentimentColor = 'text-warning border-warning/30';
             if (item.sentiment?.label === 'RADIOLOGICAL') sentimentColor = 'text-danger border-danger/40 shadow-[0_0_10px_rgba(255,51,102,0.3)] animate-pulse';
 
+            // Find best target noun for the dossier (priority on AI extracted triggers, fallback to general category)
+            const dossierKeyword = item.sentiment?.triggers?.[0] || item.category;
+
             return (
-              <a 
+              <button 
                 key={item.id} 
-                href={item.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-5 rounded-lg bg-surface border border-white/5 hover:border-primary/40 hover:bg-black/40 transition-all duration-500 hover:transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,255,136,0.1)] group relative overflow-hidden gap-6"
+                onClick={() => setActiveDossier({ keyword: dossierKeyword, link: item.link })}
+                className="w-full text-left flex items-center justify-between p-5 rounded-lg bg-surface border border-white/5 hover:border-primary/40 hover:bg-black/40 transition-all duration-500 hover:transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,255,136,0.1)] group relative overflow-hidden gap-6"
               >
                 <div className="relative z-10 flex-1">
                   <div className="flex items-start mb-3 gap-2 flex-wrap">
@@ -191,11 +203,19 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
                     />
                   </div>
                 )}
-              </a>
+              </button>
             );
           })
         )}
       </div>
+
+      {activeDossier && (
+        <DossierModal 
+          keyword={activeDossier.keyword} 
+          sourceLink={activeDossier.link} 
+          onClose={() => setActiveDossier(null)} 
+        />
+      )}
     </div>
   );
 }

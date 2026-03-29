@@ -34,6 +34,20 @@
   /* Structural Light Mode Overrides for Tailwind classes */
   .light body { background-image: none; background-color: var(--bg-color); }
   
+  /* ========================================================== */
+  /* OMNISCIENT MATRIX: DEFCON THREAT PROTOCOLS                 */
+  /* ========================================================== */
+  .defcon-1 { --primary-color: #ff0033 !important; --bg-color: #1a0005 !important; }
+  .defcon-2 { --primary-color: #ff3300 !important; }
+  .defcon-3 { --primary-color: #ff9900 !important; }
+  .defcon-4 { --primary-color: #00e6e6 !important; }
+  
+  /* Light Mode Specific DEFCON Adjustments */
+  .light .defcon-1 { --bg-color: #fff0f0 !important; --primary-color: #cc0000 !important; }
+  .light .defcon-2 { --bg-color: #fff8f8 !important; --primary-color: #e62e00 !important; }
+  .light .defcon-3 { --primary-color: #e68a00 !important; }
+  /* ========================================================== */
+  
   /* Use attribute selectors to catch opacity variants (e.g. text-white/90, focus:text-gray-400) */
   .light [class*="text-white"] { color: #000 !important; }
   .light [class*="text-gray-100"] { color: #111 !important; }
