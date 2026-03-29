@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import AIBriefingBanner from './AIBriefingBanner';
-import DossierModal from './DossierModal';
 import { useDefcon } from './DefconContext';
 
 interface NewsItem {
@@ -33,7 +32,6 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
   const [briefing, setBriefing] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeDossier, setActiveDossier] = useState<{keyword: string, link: string} | null>(null);
   const seenIds = useRef<Set<string>>(new Set());
   
   const { registerThreat } = useDefcon();
@@ -142,14 +140,13 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
             if (item.sentiment?.label === 'BEARISH') sentimentColor = 'text-warning border-warning/30';
             if (item.sentiment?.label === 'RADIOLOGICAL') sentimentColor = 'text-danger border-danger/40 shadow-[0_0_10px_rgba(255,51,102,0.3)] animate-pulse';
 
-            // Find best target noun for the dossier (priority on AI extracted triggers, fallback to general category)
-            const dossierKeyword = item.sentiment?.triggers?.[0] || item.category;
-
             return (
-              <button 
+              <a 
                 key={item.id} 
-                onClick={() => setActiveDossier({ keyword: dossierKeyword, link: item.link })}
-                className="w-full text-left flex items-center justify-between p-5 rounded-lg bg-surface border border-white/5 hover:border-primary/40 hover:bg-black/40 transition-all duration-500 hover:transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,255,136,0.1)] group relative overflow-hidden gap-6"
+                href={item.link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-5 rounded-lg bg-surface border border-white/5 hover:border-primary/40 hover:bg-black/40 transition-all duration-500 hover:transform hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,255,136,0.1)] group relative overflow-hidden gap-6"
               >
                 <div className="relative z-10 flex-1">
                   <div className="flex items-start mb-3 gap-2 flex-wrap">
@@ -203,19 +200,11 @@ export default function NewsFeed({ keywords = [], onAlert }: NewsFeedProps) {
                     />
                   </div>
                 )}
-              </button>
+              </a>
             );
           })
         )}
       </div>
-
-      {activeDossier && (
-        <DossierModal 
-          keyword={activeDossier.keyword} 
-          sourceLink={activeDossier.link} 
-          onClose={() => setActiveDossier(null)} 
-        />
-      )}
     </div>
   );
 }
