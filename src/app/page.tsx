@@ -74,19 +74,19 @@ export default function Home() {
       />
 
       {/* Top Navigation / Header */}
-      <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-surface backdrop-blur-md sticky top-0 z-50">
+      <header className="min-h-[56px] md:h-16 border-b border-border flex flex-wrap items-center justify-between px-3 sm:px-6 py-2 md:py-0 bg-surface backdrop-blur-md sticky top-0 z-50 gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-[0_0_15px_rgba(0,255,136,0.3)]">
+          <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-[0_0_15px_rgba(0,255,136,0.3)] shrink-0">
             <span className="font-['Outfit'] font-bold text-black text-xl">M</span>
           </div>
-          <h1 className="font-['Outfit'] font-bold tracking-widest text-lg uppercase hidden sm:block">
+          <h1 className="font-['Outfit'] font-bold tracking-widest text-sm sm:text-lg uppercase hidden sm:block">
             Macro Intel <span className="text-gray-500">Terminal</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono uppercase tracking-widest text-gray-400">
+        <div className="flex items-center gap-2 sm:gap-4 text-xs font-mono uppercase tracking-widest text-gray-400">
           <DefconMeter />
           <ThemeToggle />
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             SYS: ONLINE
           </div>
@@ -103,30 +103,37 @@ export default function Home() {
       <Ticker />
 
       {/* Main Dashboard Grid */}
-      <div className="flex-1 p-6 lg:p-10 max-w-[1800px] mx-auto w-full">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex-1 p-3 sm:p-6 lg:p-10 max-w-[1800px] mx-auto w-full">
+        <div className="mb-4 sm:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-3xl font-['Outfit'] font-bold uppercase tracking-wider text-white">
+            <h2 className="text-xl sm:text-3xl font-['Outfit'] font-bold uppercase tracking-wider text-white">
               Global Directives
             </h2>
-            <p className="text-gray-400 font-mono mt-2 text-sm max-w-2xl">
+            <p className="text-gray-400 font-mono mt-1 sm:mt-2 text-xs sm:text-sm max-w-2xl">
               Real-time aggregation of geopolitical events, crypto market movements, and industrial capital flows. Noise filtered. Essential intelligence only.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 w-full md:w-auto">
+            <Link 
+              href="/map"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-danger/10 border border-danger/40 text-danger rounded font-mono text-[10px] sm:text-sm tracking-widest uppercase hover:bg-danger/20 transition-all duration-300 shrink-0"
+            >
+              <span className="w-2 h-2 rounded-full bg-danger animate-pulse" />
+              MAP
+            </Link>
             <Link 
               href="/nexus" 
-              className="flex items-center justify-center gap-3 px-6 py-3 bg-[#00e6e6]/10 border border-[#00e6e6]/40 text-[#00e6e6] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#00e6e6]/20 transition-all duration-300 shadow-[0_0_15px_rgba(0,230,230,0.15)] hover:shadow-[0_0_25px_rgba(0,230,230,0.4)] hover:scale-105 shrink-0"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#00e6e6]/10 border border-[#00e6e6]/40 text-[#00e6e6] rounded font-mono text-[10px] sm:text-sm tracking-widest uppercase hover:bg-[#00e6e6]/20 transition-all duration-300 shrink-0"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00e6e6] animate-ping" />
-              3D NEXUS
+              <span className="w-2 h-2 rounded-full bg-[#00e6e6] animate-ping" />
+              NEXUS
             </Link>
             <Link 
               href="/alpha" 
-              className="flex items-center justify-center gap-3 px-6 py-3 bg-[#FFD700]/10 border border-[#FFD700]/40 text-[#FFD700] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#FFD700]/20 transition-all duration-300 shadow-[0_0_15px_rgba(255,215,0,0.15)] hover:shadow-[0_0_25px_rgba(255,215,0,0.4)] hover:scale-105 shrink-0"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 sm:px-5 py-2.5 bg-[#FFD700]/10 border border-[#FFD700]/40 text-[#FFD700] rounded font-mono text-[10px] sm:text-sm tracking-widest uppercase hover:bg-[#FFD700]/20 transition-all duration-300 shrink-0"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FFD700] animate-pulse" />
-              QUANT ALPHA
+              <span className="w-2 h-2 rounded-full bg-[#FFD700] animate-pulse" />
+              ALPHA
             </Link>
           </div>
         </div>
@@ -139,7 +146,7 @@ export default function Home() {
         {/* 7-Day Intelligence Timeline */}
         <IntelTimeline />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
           {/* Left Column: News Feed */}
           <div className="lg:col-span-9">
             <NewsFeed keywords={keywords} onAlert={handleSonarAlert} />
@@ -185,8 +192,8 @@ export default function Home() {
       </div>
 
       {/* Embedded API Uplinks Footer */}
-      <footer className="border-t border-border mt-auto p-6 bg-surface/50">
-        <div className="max-w-[1800px] mx-auto flex flex-wrap justify-center gap-8 text-[10px] font-mono tracking-widest uppercase text-gray-500">
+      <footer className="border-t border-border mt-auto p-3 sm:p-6 bg-surface/50 safe-bottom">
+        <div className="max-w-[1800px] mx-auto flex flex-wrap justify-center gap-3 sm:gap-8 text-[9px] sm:text-[10px] font-mono tracking-widest uppercase text-gray-500">
           <span className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary/70 animate-pulse"></span> CoinCap API (Crypto)
           </span>

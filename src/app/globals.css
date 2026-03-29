@@ -158,4 +158,36 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* ── Mobile Responsive Utilities ─────────────────────── */
+
+  /* Minimum touch target size for mobile (48px per Apple/Google HIG) */
+  @media (max-width: 768px) {
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    .glass-panel {
+      border-radius: 12px;
+    }
+  }
+
+  /* Safe area padding for notched phones (iPhone X+) */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+
+  /* Prevent text scaling issues on orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Smooth scrolling for mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 }

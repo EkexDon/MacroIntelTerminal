@@ -48,20 +48,20 @@ export default function AlphaTerminal() {
     <main className="min-h-screen bg-background text-foreground flex flex-col font-['Inter'] selection:bg-primary/30 selection:text-white relative overflow-hidden">
       
       {/* Top Bar */}
-      <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-surface backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-6 z-20 shrink-0">
+      <header className="min-h-[56px] md:h-16 border-b border-border flex flex-wrap items-center justify-between px-3 sm:px-6 py-2 md:py-0 bg-surface backdrop-blur-md sticky top-0 z-50 gap-2">
+        <div className="flex items-center gap-3 sm:gap-6 z-20 shrink-0">
           <Link 
             href="/" 
             className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors group"
           >
-            <span className="text-primary group-hover:-translate-x-1 transition-transform">←</span> Return Hub
+            <span className="text-primary group-hover:-translate-x-1 transition-transform">←</span> Hub
           </Link>
           <div className="hidden xl:block transform scale-90 origin-left">
             <DefconMeter />
           </div>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+        <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-[#00e6e6] animate-pulse shadow-[0_0_10px_rgba(0,230,230,0.8)]"></span>
           <h1 className="font-['Outfit'] font-bold tracking-widest text-sm text-[#00e6e6] uppercase hidden md:block">
             Agent Alpha: Quant Terminal
@@ -69,7 +69,7 @@ export default function AlphaTerminal() {
         </div>
 
         <div className="flex items-center gap-4 z-20 text-[10px] font-mono text-gray-500 tracking-widest uppercase">
-          <span>RECHARTS ENGINE v4.2</span>
+          <span className="hidden sm:inline">RECHARTS ENGINE v4.2</span>
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
         </div>
       </header>
@@ -78,15 +78,15 @@ export default function AlphaTerminal() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border-b border-border">
         <div className="p-4 border-r border-border">
           <p className="text-[10px] font-mono text-gray-500 tracking-widest uppercase mb-1">S&P 500 (Simulated)</p>
-          <p className="text-2xl font-['Outfit'] font-black text-white">{latestSP.toLocaleString()}</p>
+          <p className="text-lg sm:text-2xl font-['Outfit'] font-black text-white">{latestSP.toLocaleString()}</p>
         </div>
         <div className="p-4 border-r border-border">
           <p className="text-[10px] font-mono text-gray-500 tracking-widest uppercase mb-1">Tech Job Postings</p>
-          <p className="text-2xl font-['Outfit'] font-black text-[#ff6b6b]">{latestJobs.toLocaleString()}</p>
+          <p className="text-lg sm:text-2xl font-['Outfit'] font-black text-[#ff6b6b]">{latestJobs.toLocaleString()}</p>
         </div>
         <div className="p-4 border-r border-border">
           <p className="text-[10px] font-mono text-gray-500 tracking-widest uppercase mb-1">Retail App Downloads</p>
-          <p className="text-2xl font-['Outfit'] font-black text-[#00e6e6]">{latestApps.toLocaleString()}</p>
+          <p className="text-lg sm:text-2xl font-['Outfit'] font-black text-[#00e6e6]">{latestApps.toLocaleString()}</p>
         </div>
         <div className="p-4">
           <p className="text-[10px] font-mono text-gray-500 tracking-widest uppercase mb-1">Alpha Signal</p>
@@ -112,10 +112,10 @@ export default function AlphaTerminal() {
           CALIBRATING QUANT ENGINES...
         </div>
       ) : (
-        <div className="flex-1 p-6 lg:p-10 space-y-8 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-6 lg:p-10 space-y-4 sm:space-y-8 overflow-y-auto">
           
           {/* Primary Chart: S&P 500 Price Action */}
-          <div className="glass-panel p-6">
+          <div className="glass-panel p-3 sm:p-6">
             <h3 className="font-mono text-xs text-gray-500 tracking-widest uppercase mb-4 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#00e6e6]" />
               S&P 500 Index — 180-Day Trajectory
@@ -196,7 +196,7 @@ export default function AlphaTerminal() {
           </div>
 
           {/* Data Intelligence Table */}
-          <div className="glass-panel p-6">
+          <div className="glass-panel p-3 sm:p-6">
             <h3 className="font-mono text-xs text-gray-500 tracking-widest uppercase mb-4">
               Latest 7-Day Quant Snapshot
             </h3>

@@ -144,8 +144,8 @@ export default function MapCommandCenter() {
       </div>
 
       {/* Top Navigation Bar */}
-      <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-surface backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-6 z-20 shrink-0">
+      <header className="min-h-[56px] md:h-16 border-b border-border flex flex-wrap items-center justify-between px-3 sm:px-6 py-2 md:py-0 bg-surface backdrop-blur-md sticky top-0 z-50 gap-2">
+        <div className="flex items-center gap-3 sm:gap-6 z-20 shrink-0">
           <Link 
             href="/" 
             className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors group"
@@ -164,7 +164,7 @@ export default function MapCommandCenter() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6 z-20 overflow-x-auto hide-scrollbar">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-6 z-20 overflow-x-auto scrollbar-hide w-full md:w-auto justify-end">
           <RadioIntercept />
           
           {/* OSINT Toggle */}
@@ -234,7 +234,7 @@ export default function MapCommandCenter() {
       </header>
 
       {/* Main Map Interface */}
-      <div className="flex-1 flex flex-col max-w-[1800px] w-full mx-auto p-4 md:p-8 relative">
+      <div className="flex-1 flex flex-col max-w-[1800px] w-full mx-auto p-2 sm:p-4 md:p-8 relative">
         
         {/* Whale Intercept Holographic Overlay */}
         {whaleAlert && (
