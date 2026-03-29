@@ -104,6 +104,29 @@ export default function NexusCommandCenter() {
            SEMANTIC EDGES: {graphData.links.length} <br/>
            <span className="text-primary mt-2 block animate-pulse">DRAG TO ROTATE 3D SPACE</span>
         </div>
+        {/* Informational Sidebar Briefing */}
+        <div className="absolute top-24 right-6 w-72 md:w-80 z-40 p-5 glass-panel bg-black/80 border-white/10 backdrop-blur-xl shadow-[0_0_30px_rgba(0,255,136,0.1)] hidden md:block animate-in slide-in-from-right duration-500 rounded-lg">
+          <h2 className="text-primary font-mono tracking-widest text-xs uppercase mb-4 border-b border-primary/20 pb-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            [ NEXUS BRIEFING ]
+          </h2>
+          
+          <div className="space-y-4 text-xs font-mono text-gray-400 leading-relaxed">
+            <p>
+              <strong className="text-white tracking-wider">CONTEXT MATRIX</strong><br/>
+              This is a 3D Force-Directed Entity Graph. Our AI scans global intelligence, extracts critical geopolitical nouns, and maps their <span className="text-[#00e6e6]">co-occurrence</span>.
+            </p>
+            <p>
+              <strong className="text-white tracking-wider">GRAVITATIONAL PULL</strong><br/>
+              When entities like &quot;Taiwan&quot; and &quot;TSMC&quot; appear together in reports, they form semantic bonds. The physics engine pulls them physically closer, revealing hidden supply-chain and political clusters.
+            </p>
+            <p>
+              <strong className="text-white tracking-wider">DATA VECTORS</strong><br/>
+              The glowing particles flowing between nodes simulate active momentum based on 24hr news volume.
+            </p>
+          </div>
+        </div>
+
       </div>
     </main>
   );
