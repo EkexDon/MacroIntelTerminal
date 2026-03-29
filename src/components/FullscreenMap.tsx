@@ -49,6 +49,7 @@ interface FullscreenMapProps {
   seismic?: SeismicAnomaly[] | null;
   whales?: WhaleEvent[] | null;
   chokepointsActive?: boolean;
+  vips?: any[] | null;
 }
 
 interface HoveredNode {
@@ -58,7 +59,7 @@ interface HoveredNode {
   color?: string;
 }
 
-export default function FullscreenMap({ events, osint, seismic, whales, chokepointsActive }: FullscreenMapProps) {
+export default function FullscreenMap({ events, osint, seismic, whales, chokepointsActive, vips }: FullscreenMapProps) {
   const [hoveredNode, setHoveredNode] = useState<HoveredNode | null>(null);
   
   const validMarkers = events.filter(e => e.coordinates);
@@ -190,6 +191,38 @@ export default function FullscreenMap({ events, osint, seismic, whales, chokepoi
                 <circle r={15} fill="transparent" className="cursor-crosshair z-50" />
                 <circle r={8} fill="#ffcc00" className="animate-ping opacity-80 pointer-events-none duration-1000" />
                 <circle r={4} fill="#ffcc00" className="pointer-events-none drop-shadow-[0_0_20px_#ffcc00]" />
+              </Marker>
+            ))}
+
+            {/* VANGUARD LAYER: VIP Flight Tracking & Convergence */}
+            {vips?.map((vip) => (
+              <Marker 
+                key={`vip-${vip.id}`} 
+                coordinates={[vip.lng, vip.lat]}
+                onMouseEnter={() => setHoveredNode({
+                  category: `VANGUARD: CORPORATE VIP`,
+                  title: vip.name,
+                  subtitle: `TARGET VELOCITY LOCKED | LOCATION: ${vip.lng.toFixed(2)}, ${vip.lat.toFixed(2)}`,
+                  color: '#FFD700'
+                })}
+                onMouseLeave={() => setHoveredNode(null)}
+              >
+                {/* Visuals: Very sharp, tiny golden star/triangle indicating a private jet */}
+                <polygon points="0,-6 4,4 -5,0 5,0 -4,4" fill="#FFD700" className="drop-shadow-[0_0_10px_#FFD700]" />
+                <circle r={15} fill="transparent" className="cursor-crosshair z-50" />
+                <text
+                   textAnchor="middle"
+                   y={12}
+                   style={{
+                     fontFamily: 'monospace',
+                     fontSize: '5px',
+                     fill: '#FFD700',
+                     fontWeight: 'bold',
+                     filter: 'drop-shadow(0px 0px 4px rgba(255, 215, 0, 0.8))'
+                   }}
+                 >
+                   [{vip.name.split(' ')[0]}]
+                 </text>
               </Marker>
             ))}
 

@@ -5,9 +5,11 @@ import Link from 'next/link';
 import FullscreenMap, { CHOKEPOINTS } from '@/components/FullscreenMap';
 import SonarEventList from '@/components/SonarEventList';
 import { useWhaleTracker, WhaleEvent } from '@/hooks/useWhaleTracker';
+import { useVanguardTracker } from '@/hooks/useVanguardTracker';
 import DefconMeter from '@/components/DefconMeter';
 import { useDefcon } from '@/components/DefconContext';
 import RadioIntercept from '@/components/RadioIntercept';
+import WhisperTicker from '@/components/WhisperTicker';
 
 interface NewsItem {
   id: string;
@@ -47,7 +49,17 @@ export default function MapCommandCenter() {
   const [chokepointsActive, setChokepointsActive] = useState(true);
   const [logisticsShock, setLogisticsShock] = useState<string | null>(null);
 
+  const [vanguardActive, setVanguardActive] = useState(true);
+  const [vanguardShock, setVanguardShock] = useState<string | null>(null);
+
   const { registerThreat } = useDefcon();
+
+  // Highlight VIPS converging together
+  const { vips } = useVanguardTracker(vanguardActive, (convergence) => {
+    registerThreat(80); // Absolute chaos threat level (80/100) -> Overrides almost everything to Defcon 1 or 2
+    setVanguardShock(`[VANGUARD] MULTIPLE VIPS CONVERGED ON ${convergence.location}: ${convergence.attendees.join(', ')}. PROBABLE SECRETE DEAL IMMINENT.`);
+    setTimeout(() => setVanguardShock(null), 12000);
+  });
 
   const evaluateLogisticsProximity = (lng: number, lat: number, source: string) => {
     if (!chokepointsActive) return;
@@ -126,6 +138,11 @@ export default function MapCommandCenter() {
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col font-['Inter'] selection:bg-primary/30 selection:text-white relative overflow-hidden">
       
+      {/* Dark Web Intelligence Banner - Embedded directly at the top matrix */}
+      <div className="w-full z-[60] relative shrink-0">
+        <WhisperTicker />
+      </div>
+
       {/* Top Navigation Bar */}
       <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-surface backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-6 z-20 shrink-0">
@@ -201,6 +218,18 @@ export default function MapCommandCenter() {
               <div className={`w-3 h-3 rounded-full absolute top-[3px] transition-transform duration-300 ${whaleActive ? 'bg-[#ffcc00] translate-x-[22px] shadow-[0_0_10px_rgba(255,204,0,0.8)]' : 'bg-gray-500 translate-x-[4px]'}`} />
             </button>
           </div>
+          {/* Vanguard Toggle */}
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-mono tracking-widest uppercase whitespace-nowrap hidden sm:inline ${vanguardActive ? 'text-[#FFD700] drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'text-gray-500'}`}>
+              VANGUARD
+            </span>
+            <button 
+              onClick={() => setVanguardActive(!vanguardActive)}
+              className={`w-10 h-5 rounded-full relative shrink-0 transition-colors duration-300 ${vanguardActive ? 'bg-[#FFD700]/20 border border-[#FFD700]/50' : 'bg-black border border-white/20'}`}
+            >
+              <div className={`w-3 h-3 rounded-full absolute top-[3px] transition-transform duration-300 ${vanguardActive ? 'bg-[#FFD700] translate-x-[22px] shadow-[0_0_10px_rgba(255,215,0,0.8)]' : 'bg-gray-500 translate-x-[4px]'}`} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -245,6 +274,21 @@ export default function MapCommandCenter() {
           </div>
         )}
 
+        {/* Vanguard VIP Convergence Hologram */}
+        {vanguardShock && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] pointer-events-none animate-in fade-in zoom-in-50 duration-500">
+            <div className="glass-panel border-[#FFD700] bg-[#1a1600]/95 px-10 py-6 shadow-[0_0_50px_rgba(255,215,0,0.4)] text-center w-[300px] md:w-[600px] flex flex-col items-center">
+                 <h2 className="text-[#FFD700] font-black tracking-[0.2em] text-2xl animate-pulse mb-3">
+                   VANGUARD ALERT
+                 </h2>
+                 <p className="text-white font-mono text-sm leading-relaxed border-t border-[#FFD700]/30 pt-4">
+                   {vanguardShock}
+                 </p>
+                 <div className="mt-4 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FFD700] to-transparent" />
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex-1 flex items-center justify-center font-mono text-gray-500 tracking-widest animate-pulse">
             CALIBRATING GEOGRAPHIC SENSORS...
@@ -257,6 +301,7 @@ export default function MapCommandCenter() {
               seismic={seismicActive ? seismic : null}
               whales={whaleActive ? whales : undefined}
               chokepointsActive={chokepointsActive}
+              vips={vanguardActive ? vips : null}
             />
             <SonarEventList events={news} />
           </div>

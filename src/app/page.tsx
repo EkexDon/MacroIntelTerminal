@@ -11,6 +11,7 @@ import KeywordAlerts from "@/components/KeywordAlerts";
 import TopNewsBanner from "@/components/TopNewsBanner";
 import DefconMeter from "@/components/DefconMeter";
 import OracleMarquee from "@/components/OracleMarquee";
+import WhisperTicker from "@/components/WhisperTicker";
 import Link from 'next/link';
 
 export default function Home() {
@@ -93,6 +94,9 @@ export default function Home() {
       {/* Polymarket Web3 Prediction Oracle */}
       <OracleMarquee />
 
+      {/* Agent Whisper: Dark Web Chatter Velocity */}
+      <WhisperTicker />
+
       {/* Live Market Ticker */}
       <Ticker />
 
@@ -107,13 +111,22 @@ export default function Home() {
               Real-time aggregation of geopolitical events, crypto market movements, and industrial capital flows. Noise filtered. Essential intelligence only.
             </p>
           </div>
-          <Link 
-            href="/nexus" 
-            className="flex items-center justify-center gap-3 px-6 py-3 bg-[#00e6e6]/10 border border-[#00e6e6]/40 text-[#00e6e6] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#00e6e6]/20 transition-all duration-300 shadow-[0_0_15px_rgba(0,230,230,0.15)] hover:shadow-[0_0_25px_rgba(0,230,230,0.4)] hover:scale-105 shrink-0"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00e6e6] animate-ping" />
-            ENTER 3D NEXUS
-          </Link>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link 
+              href="/nexus" 
+              className="flex items-center justify-center gap-3 px-6 py-3 bg-[#00e6e6]/10 border border-[#00e6e6]/40 text-[#00e6e6] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#00e6e6]/20 transition-all duration-300 shadow-[0_0_15px_rgba(0,230,230,0.15)] hover:shadow-[0_0_25px_rgba(0,230,230,0.4)] hover:scale-105 shrink-0"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-[#00e6e6] animate-ping" />
+              3D NEXUS
+            </Link>
+            <Link 
+              href="/alpha" 
+              className="flex items-center justify-center gap-3 px-6 py-3 bg-[#FFD700]/10 border border-[#FFD700]/40 text-[#FFD700] rounded font-mono text-sm tracking-widest uppercase hover:bg-[#FFD700]/20 transition-all duration-300 shadow-[0_0_15px_rgba(255,215,0,0.15)] hover:shadow-[0_0_25px_rgba(255,215,0,0.4)] hover:scale-105 shrink-0"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FFD700] animate-pulse" />
+              QUANT ALPHA
+            </Link>
+          </div>
         </div>
 
         <TopNewsBanner />
