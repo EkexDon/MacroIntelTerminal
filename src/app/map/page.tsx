@@ -128,12 +128,17 @@ export default function MapCommandCenter() {
       
       {/* Top Navigation Bar */}
       <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-surface backdrop-blur-md sticky top-0 z-50">
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors group z-20 shrink-0"
-        >
-          <span className="text-primary group-hover:-translate-x-1 transition-transform">←</span> Return Hub
-        </Link>
+        <div className="flex items-center gap-6 z-20 shrink-0">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors group"
+          >
+            <span className="text-primary group-hover:-translate-x-1 transition-transform">←</span> Return Hub
+          </Link>
+          <div className="hidden xl:block transform scale-90 origin-left">
+            <DefconMeter />
+          </div>
+        </div>
         
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-danger animate-pulse shadow-[0_0_10px_rgba(255,51,102,0.8)]"></span>
@@ -142,8 +147,7 @@ export default function MapCommandCenter() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-6 z-20 overflow-x-auto hide-scrollbar">
-          <DefconMeter />
+        <div className="flex items-center gap-4 md:gap-6 z-20 overflow-x-auto hide-scrollbar">
           <RadioIntercept />
           
           {/* OSINT Toggle */}
