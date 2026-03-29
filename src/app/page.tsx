@@ -12,6 +12,7 @@ import TopNewsBanner from "@/components/TopNewsBanner";
 import DefconMeter from "@/components/DefconMeter";
 import OracleMarquee from "@/components/OracleMarquee";
 import WhisperTicker from "@/components/WhisperTicker";
+import CortexBriefing from "@/components/CortexBriefing";
 import Link from 'next/link';
 
 export default function Home() {
@@ -130,6 +131,9 @@ export default function Home() {
         </div>
 
         <TopNewsBanner />
+
+        {/* Agent Cortex: AI Morning Briefing */}
+        <CortexBriefing />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: News Feed */}
