@@ -12,7 +12,7 @@ export default function WhisperTicker() {
 
   useEffect(() => {
     const inter = setInterval(() => {
-      const isSpike = Math.random() < 0.15; // 15% chance to hit a massive OSINT keyword trend
+      const isSpike = Math.random() < 0.08; // 8% chance per tick
       
       if (isSpike) {
         const word = CHATTER[Math.floor(Math.random() * CHATTER.length)];
@@ -20,7 +20,7 @@ export default function WhisperTicker() {
         setIsSpiking(true);
         // Automatically link this alternative data intelligence into the global Terminal DEFCON status
         if (["BLOCKADE", "EXPLOIT", "STRIKE"].includes(word)) {
-            registerThreat(35); 
+            registerThreat(15); // Moderate push — won't solo max out DEFCON
         }
       } else {
         setTicker(`INDEXING: ${Math.floor(Math.random() * 5000) + 1000} ENCRYPTED PACKETS ANALYZED / MINUTE... NOBNET CLEAR.`);

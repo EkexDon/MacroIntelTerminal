@@ -23,11 +23,11 @@ export function DefconProvider({ children }: { children: React.ReactNode }) {
   const [defcon, setDefcon] = useState<DefconLevel>(5);
   const [threatLevel, setThreatLevel] = useState(0); // 0 to 100 master matrix
 
-  // Threat decay over time (cools off every minute to automatically reset DEFCON if world stabilizes)
+  // Threat decay over time — must be aggressive enough to counterbalance continuous threat sources
   useEffect(() => {
     const interval = setInterval(() => {
-      setThreatLevel(prev => Math.max(0, prev - 5));
-    }, 60000);
+      setThreatLevel(prev => Math.max(0, prev - 10));
+    }, 15000); // Decay -10 every 15 seconds
     return () => clearInterval(interval);
   }, []);
 
